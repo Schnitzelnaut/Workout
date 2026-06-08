@@ -2,8 +2,8 @@ const CACHE_NAME = 'homeworkout-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '',
-  '',
+  '/static/js/main.chunk.js',
+  '/static/js/bundle.js',
   '/manifest.json'
 ];
 
