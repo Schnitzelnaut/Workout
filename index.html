@@ -220,6 +220,8 @@ a{text-decoration:none}
     </div>
     <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Equipment</div>
     <div id="settings-equip-list"></div>
+    <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px">Trainingstage</div>
+    <div class="card" style="margin-bottom:10px"><div id="settings-day-picker" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div><div id="settings-day-hint" style="font-size:11px;color:#555"></div></div>
     <button onclick="saveEquipmentFromSettings()" class="primary-btn" style="margin:10px 0 24px">Plan aktualisieren</button>
     <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Daten</div>
     <div class="card">
@@ -286,6 +288,18 @@ var QUOTES=[
 'Stark wird man nicht an guten Tagen, sondern an den schweren.',
 'Vergleiche dich nicht mit anderen. Vergleiche dich mit dir von gestern.'];
 
+var WORKOUT_SLOTS=[
+  {id:"push_core",focus:"Push + Core",color:"#e85d3a",emoji:"&#128170;"},
+  {id:"pull_cardio",focus:"Pull + Cardio",color:"#3a8fe8",emoji:"&#127947;"},
+  {id:"legs_core",focus:"Beine + Core",color:"#3ac47a",emoji:"&#129461;"},
+  {id:"push",focus:"Push – Brust & Schultern",color:"#e85d3a",emoji:"&#128170;"},
+  {id:"pull",focus:"Pull – Rücken & Bizeps",color:"#3a8fe8",emoji:"&#127947;"},
+  {id:"legs",focus:"Beine & Gesäß",color:"#3ac47a",emoji:"&#129461;"},
+  {id:"core",focus:"Core & Stabilität",color:"#c43ae8",emoji:"&#127919;"},
+  {id:"cardio",focus:"Ganzkörper + Cardio",color:"#e8b33a",emoji:"&#128293;"},
+  {id:"full",focus:"Ganzkörper",color:"#e8b33a",emoji:"&#128293;"},
+];
+
 // Muscle groups for swap feature
 var MUSCLE_GROUPS={
   push:['liegestuetze','enge_liegestuetze','pike','decline','db_press','band_press','explosive'],
@@ -332,16 +346,70 @@ var EX_DB={
   bear_crawl:{name:'Bear Crawl',sets:3,reps:'15 Meter',restSec:45,muscles:'Core, Koordination',animKey:'climber',tip:'Knie 2cm über Boden',group:'cardio',equip:['bodyweight']}
 };
 
-function buildDefaultPlan(eq){
+
+function buildSlotMap(){
+  daySlotMap={};
+  var td=trainingDays||['Mo','Di','Mi','Do','Fr'];
+  var n=td.length;
+  // Pick label/color/emoji based on frequency, matching buildDefaultPlan logic
+  var labels;
+  if(n<=1)labels=[{id:'full',focus:'Ganzkörper',color:'#e8b33a',emoji:'&#128293;'}];
+  else if(n===2)labels=[{id:'push_core',focus:'Push + Core',color:'#e85d3a',emoji:'&#128170;'},{id:'legs_core',focus:'Beine + Core',color:'#3ac47a',emoji:'&#129461;'}];
+  else if(n===3)labels=[{id:'push_core',focus:'Push + Core',color:'#e85d3a',emoji:'&#128170;'},{id:'pull_cardio',focus:'Pull + Cardio',color:'#3a8fe8',emoji:'&#127947;'},{id:'legs_core',focus:'Beine + Core',color:'#3ac47a',emoji:'&#129461;'}];
+  else if(n===4)labels=[{id:'push',focus:'Push',color:'#e85d3a',emoji:'&#128170;'},{id:'pull',focus:'Pull',color:'#3a8fe8',emoji:'&#127947;'},{id:'legs',focus:'Beine & Gesäß',color:'#3ac47a',emoji:'&#129461;'},{id:'core_cardio',focus:'Core + Cardio',color:'#e8b33a',emoji:'&#127919;'}];
+  else labels=[{id:'push',focus:'Push – Brust & Schultern',color:'#e85d3a',emoji:'&#128170;'},{id:'pull',focus:'Pull – Rücken & Bizeps',color:'#3a8fe8',emoji:'&#127947;'},{id:'legs',focus:'Beine & Gesäß',color:'#3ac47a',emoji:'&#129461;'},{id:'core',focus:'Core & Stabilität',color:'#c43ae8',emoji:'&#127919;'},{id:'cardio',focus:'Ganzkörper + Cardio',color:'#e8b33a',emoji:'&#128293;'},{id:'full',focus:'Ganzkörper',color:'#e8b33a',emoji:'&#128293;'},{id:'lower',focus:'Unterkörper',color:'#3ac47a',emoji:'&#129461;'}];
+  td.forEach(function(d,i){daySlotMap[d]=labels[i%labels.length];});
+}
+function getDayInfo(dayKey){
+  buildSlotMap();
+  var slot=daySlotMap[dayKey];
+  if(!slot)return{focus:'Ruhetag',color:'#555',emoji:'&#128564;',id:'rest',isRest:true};
+  return{focus:slot.focus,color:slot.color,emoji:slot.emoji,id:slot.id,isRest:false};
+}
+function renderDayPicker(pid,hid,sel){
+  var el=document.getElementById(pid);if(!el)return;
+  el.innerHTML=DAYS.map(function(d){
+    var on=sel.indexOf(d)>=0;
+    return '<div onclick="toggleTrainingDay(\''+d+'\',\''+pid+'\',\''+hid+'\')" style="width:40px;height:40px;border-radius:50%;border:1.5px solid '+(on?'#e85d3a66':'#22222e')+';background:'+(on?'#e85d3a20':'transparent')+';display:flex;align-items:center;justify-content:center;font-size:11px;color:'+(on?'#e85d3a':'#555')+';cursor:pointer;font-weight:'+(on?'bold':'normal')+';transition:all .2s">'+d+'</div>';
+  }).join('');
+  var h=document.getElementById(hid);
+  if(h)h.textContent=sel.length+' Tag'+(sel.length!==1?'e':'')+' pro Woche geplant';
+}
+function toggleTrainingDay(day,pid,hid){
+  var idx=selectedTrainingDays.indexOf(day);
+  if(idx>=0&&selectedTrainingDays.length>1)selectedTrainingDays.splice(idx,1);
+  else if(idx<0)selectedTrainingDays.push(day);
+  selectedTrainingDays=DAYS.filter(function(d){return selectedTrainingDays.indexOf(d)>=0;});
+  renderDayPicker(pid,hid,selectedTrainingDays);
+}
+function buildDefaultPlan(eq,td){
+  td=td||(typeof trainingDays!=='undefined'?trainingDays:null)||['Mo','Di','Mi','Do','Fr'];
   var has=function(id){return eq.indexOf(id)>=0||eq.indexOf('gym')>=0;};
-  return {
-    Mo:['liegestuetze',has('dumbbells')?'db_press':'enge_liegestuetze','pike',has('bands')?'band_press':'decline','plank_ex'],
-    Di:[has('pullupbar')?'klimmzug':has('bands')?'band_row':'tisch_rudern','superman_ex',has('dumbbells')?'db_curl':has('bands')?'band_curl':'towel_curl','snow_angel','side_plank'],
-    Mi:[has('dumbbells')?'goblet':has('bands')?'band_squat':'kniebeuge','ausfallschritt','glute_bridge','sumo','calf_ex'],
-    Do:['bicycle','dead_bug_ex','climber_ex',has('pullupbar')?'hanging':'leg_raise_ex','russian'],
-    Fr:['burpee_ex','jump_squat','explosive','high_knees','bear_crawl'],
-    Sa:[],So:[]
-  };
+  var n=td.length;
+  // Slot definitions per training frequency
+  // Each slot = one session's exercise IDs
+  var push_ex=['liegestuetze',has('dumbbells')?'db_press':'enge_liegestuetze','pike',has('bands')?'band_press':'decline','plank_ex'];
+  var pull_ex=[has('pullupbar')?'klimmzug':has('bands')?'band_row':'tisch_rudern','superman_ex',has('dumbbells')?'db_curl':has('bands')?'band_curl':'towel_curl','snow_angel','side_plank'];
+  var legs_ex=[has('dumbbells')?'goblet':has('bands')?'band_squat':'kniebeuge','ausfallschritt','glute_bridge','sumo','calf_ex'];
+  var core_ex=['bicycle','dead_bug_ex','climber_ex',has('pullupbar')?'hanging':'leg_raise_ex','russian'];
+  var cardio_ex=['burpee_ex','jump_squat','explosive','high_knees','bear_crawl'];
+  // Combined sessions for fewer training days
+  var push_core=['liegestuetze',has('dumbbells')?'db_press':'enge_liegestuetze','pike','plank_ex','bicycle','dead_bug_ex','leg_raise_ex'];
+  var pull_cardio=[has('pullupbar')?'klimmzug':has('bands')?'band_row':'tisch_rudern',has('dumbbells')?'db_curl':'towel_curl','superman_ex','burpee_ex','climber_ex','high_knees','russian'];
+  var legs_core=[has('dumbbells')?'goblet':'kniebeuge','ausfallschritt','glute_bridge','jump_squat','side_plank','dead_bug_ex','calf_ex'];
+  var full_a=['liegestuetze',has('pullupbar')?'klimmzug':'tisch_rudern',has('dumbbells')?'goblet':'kniebeuge','plank_ex','burpee_ex','bicycle'];
+  var full_b=['enge_liegestuetze','superman_ex','ausfallschritt','climber_ex','jump_squat','russian','glute_bridge'];
+  var slots;
+  if(n<=1) slots=[full_a];
+  else if(n===2) slots=[push_core,legs_core];
+  else if(n===3) slots=[push_core,pull_cardio,legs_core];
+  else if(n===4) slots=[push_ex,pull_ex.concat([]),legs_ex,core_ex.slice(0,3).concat(cardio_ex.slice(0,2))];
+  else if(n===5) slots=[push_ex,pull_ex,legs_ex,core_ex,cardio_ex];
+  else if(n===6) slots=[push_ex,pull_ex,legs_ex,core_ex,cardio_ex,full_a];
+  else           slots=[push_ex,pull_ex,legs_ex,core_ex,cardio_ex,full_a,full_b];
+  var plan={Mo:[],Di:[],Mi:[],Do:[],Fr:[],Sa:[],So:[]};
+  td.forEach(function(day,i){plan[day]=slots[i%slots.length];});
+  return plan;
 }
 
 var SA_EXERCISES=[
@@ -396,20 +464,34 @@ var equipment=load('equipment',null);
 var history=load('workout-history',{});
 var weightLog=load('weight-log',[]);
 var planIds=load('plan-ids',null);
+var trainingDays=load('training-days',['Mo','Di','Mi','Do','Fr']);
+var daySlotMap={};
 var selectedEquip=['bodyweight'];
+var selectedTrainingDays=(trainingDays||['Mo','Di','Mi','Do','Fr']).slice();
 var currentDay=null,setsDone={},activeEx=0,animVisible=true;
 var timerInterval=null,timerRemaining=0,timerTotal=0;
 var workoutStartTs=null,durationInterval=null;
 
 function getTodayKey(){var m=['So','Mo','Di','Mi','Do','Fr','Sa'];return m[new Date().getDay()];}
 function getDateKey(d){d=d||new Date();return d.toISOString().split('T')[0];}
-function calcStreak(){var s=0,t=new Date();for(var i=0;i<365;i++){var d=new Date(t);d.setDate(t.getDate()-i);if(history[getDateKey(d)]&&history[getDateKey(d)].completed)s++;else if(i>0)break;}return s;}
+function calcStreak(){
+  var td=trainingDays||['Mo','Di','Mi','Do','Fr'],s=0,t=new Date();
+  for(var i=0;i<365;i++){
+    var d=new Date(t);d.setDate(t.getDate()-i);
+    var dk=['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];
+    if(td.indexOf(dk)<0)continue;
+    var entry=history[getDateKey(d)];
+    if(i===0&&(!entry||!entry.completed))continue;
+    if(entry&&entry.completed)s++;else break;
+  }
+  return s;
+}
 function fmtTime(sec){return Math.floor(sec/60)+':'+(sec%60<10?'0':'')+sec%60;}
 function weekWorkouts(){
   var count=0,now=new Date();
   var dow=now.getDay();var monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1));monday.setHours(0,0,0,0);
   for(var k in history){if(history[k].completed){var d=new Date(k);if(d>=monday)count++;}}
-  return count;
+  return count+'/'+(trainingDays||[]).length;
 }
 function vibrate(p){if(navigator.vibrate)navigator.vibrate(p);}
 function beep(){
@@ -463,7 +545,8 @@ function finishSetup(){
   profile={name:name,height:height,goalKg:goal};
   save('profile',profile);
   equipment=selectedEquip.slice();save('equipment',equipment);
-  planIds=buildDefaultPlan(equipment);save('plan-ids',planIds);
+  trainingDays=selectedTrainingDays.slice();save('training-days',trainingDays);
+  planIds=buildDefaultPlan(equipment,trainingDays);save('plan-ids',planIds);
   if(weight){weightLog.push({date:getDateKey(),kg:weight});save('weight-log',weightLog);}
   showScreen('home');
 }
@@ -471,7 +554,7 @@ function finishSetup(){
 // ═══ HOME ═════════════════════════════════════════════════════════════════════
 function renderHome(){
   try {
-  var today=getTodayKey(),col=DAY_COLORS[today];
+  var today=getTodayKey(),_di=getDayInfo(today),col=_di.color;
   var todayDone=history[getDateKey()]&&history[getDateKey()].completed;
   var streak=calcStreak();
   var wArr=weightLog.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
@@ -479,8 +562,8 @@ function renderHome(){
   var hour=new Date().getHours();
   var greet=hour<11?'Guten Morgen':hour<18?'Hi':'Guten Abend';
   document.getElementById('home-greeting').textContent=greet+', '+(profile?profile.name:'')+' !';
-  document.getElementById('home-title').innerHTML=DAY_EMOJI[today]+' <span style="font-style:italic;color:'+col+'">'+DAY_LABELS[today]+'</span>';
-  document.getElementById('home-focus').textContent=DAY_FOCUS[today];
+  document.getElementById('home-title').innerHTML=_di.emoji+' <span style="font-style:italic;color:'+col+'">'+DAY_LABELS[today]+'</span>';
+  document.getElementById('home-focus').textContent=_di.focus;
   // Quote of the day (stable per day)
   var qIdx=new Date().getDate()%QUOTES.length;
   document.getElementById('quote-box').innerHTML='&#128172; '+QUOTES[qIdx];
@@ -489,7 +572,7 @@ function renderHome(){
   document.getElementById('home-pills').innerHTML=pills;
   document.getElementById('home-weight').textContent=latestW?latestW.kg+' kg':'-';
   document.getElementById('home-streak').textContent=streak;
-  document.getElementById('home-week-count').textContent=weekWorkouts()+'/5';
+  document.getElementById('home-week-count').textContent=weekWorkouts();
   // Goal progress
   var goalBox=document.getElementById('goal-progress-box');
   if(profile&&profile.goalKg&&latestW&&weightLog.length>1){
@@ -520,9 +603,17 @@ function renderHome(){
     }
   }
   document.getElementById('week-list').innerHTML=DAYS.map(function(d){
-    var dc=DAY_COLORS[d],isToday=d===today;
+    var _dinfo=getDayInfo(d),_dc=_dinfo.color,isToday=d===today;
     var isDone=history[getDateKey()]&&history[getDateKey()].dayKey===d&&history[getDateKey()].completed;
-    return '<div onclick="startWorkout(\''+d+'\')" style="background:'+(isToday?dc+'10':'#16161e')+';border:1px solid '+(isToday?dc+'44':'#22222e')+';border-radius:11px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;cursor:pointer"><span style="font-size:16px">'+DAY_EMOJI[d]+'</span><div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:13px;color:'+(isToday?'#f0ede6':'#999')+'">'+DAY_LABELS[d]+'</span>'+(isToday?'<span class="badge" style="color:'+dc+';border-color:'+dc+'44">HEUTE</span>':'')+'</div><div style="font-size:11px;color:'+dc+';font-style:italic">'+DAY_FOCUS[d]+'</div></div>'+(isDone?'<span style="font-size:16px">&#9989;</span>':'<span style="font-size:14px;color:#555">&#8250;</span>')+'</div>';
+    return '<div onclick="startWorkout(\''+d+'\')" style="background:'+(isToday?_dc+'10':'#16161e')+';border:1px solid '+(isToday?_dc+'44':'#22222e')+';border-radius:11px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;cursor:pointer">'
+      +'<span style="font-size:16px">'+_dinfo.emoji+'</span>'
+      +'<div style="flex:1"><div style="display:flex;align-items:center;gap:7px">'
+      +'<span style="font-size:13px;color:'+(isToday?'#f0ede6':'#999')+'">'+DAY_LABELS[d]+'</span>'
+      +(isToday?'<span class="badge" style="color:'+_dc+';border-color:'+_dc+'44">HEUTE</span>':'')
+      +(_dinfo.isRest&&d!=='So'?'<span style="font-size:9px;color:#3a3a3a;border:1px solid #2a2a2a;border-radius:4px;padding:1px 4px">RUHE</span>':'')
+      +'</div><div style="font-size:11px;color:'+_dc+';font-style:italic">'+_dinfo.focus+'</div></div>'
+      +(isDone?'<span style="font-size:16px">&#9989;</span>':'<span style="font-size:14px;color:#555">&#8250;</span>')
+      +'</div>';
   }).join('');
 }
 
@@ -547,7 +638,7 @@ function confirmLeaveWorkout(){
   showScreen('home');
 }
 function renderWorkout(){
-  var col=DAY_COLORS[currentDay],exercises=getExercises(currentDay);
+  var _wdi=getDayInfo(currentDay),col=_wdi.color,exercises=getExercises(currentDay);
   var isRest=REST_DAYS.indexOf(currentDay)>=0||exercises.length===0;
   var todayDone=history[getDateKey()]&&history[getDateKey()].completed;
   document.getElementById('workout-day-label').textContent=DAY_LABELS[currentDay];
@@ -780,6 +871,8 @@ function renderSettings(){
   }
   selectedEquip=equipment?equipment.slice():['bodyweight'];
   renderEquipList('settings-equip-list',selectedEquip);
+  selectedTrainingDays=(trainingDays||['Mo','Di','Mi','Do','Fr']).slice();
+  renderDayPicker('settings-day-picker','settings-day-hint',selectedTrainingDays);
 }
 function savePersonal(){
   profile=profile||{};
@@ -791,7 +884,8 @@ function savePersonal(){
 }
 function saveEquipmentFromSettings(){
   equipment=selectedEquip.slice();save('equipment',equipment);
-  planIds=buildDefaultPlan(equipment);save('plan-ids',planIds);
+  trainingDays=selectedTrainingDays.slice();save('training-days',trainingDays);
+  planIds=buildDefaultPlan(equipment,trainingDays);save('plan-ids',planIds);
   showScreen('home');
 }
 function exportData(){
@@ -828,12 +922,14 @@ function resetAll(){
 // ═══ INIT ═════════════════════════════════════════════════════════════════════
 if(!profile||!equipment){
   selectedEquip=['bodyweight'];
+  selectedTrainingDays=['Mo','Di','Mi','Do','Fr'];
   renderEquipList('equip-list',selectedEquip);
+  renderDayPicker('setup-day-picker','setup-day-hint',selectedTrainingDays);
   showScreen('setup');
 }else{
   // Always ensure planIds has all days
   if(!planIds||!planIds['Mo']||!planIds['Mi']||!planIds['Fr']){
-    planIds=buildDefaultPlan(equipment);
+    planIds=buildDefaultPlan(equipment,trainingDays);
     save('plan-ids',planIds);
   }
   showScreen('home');

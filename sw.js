@@ -1,4 +1,4 @@
-const VERSION = 'v4';
+const VERSION = 'v6';
 const CACHE = 'workout-' + VERSION;
 
 self.addEventListener('install', e => {
