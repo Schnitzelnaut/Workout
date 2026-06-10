@@ -48,6 +48,7 @@ a{text-decoration:none}
 .primary-btn{width:100%;padding:15px;border-radius:13px;background:#e85d3a;border:none;color:#0f0f12;font-size:15px;font-weight:bold}
 .swap-option{background:#16161e;border:1px solid #22222e;border-radius:11px;padding:13px 15px;margin-bottom:8px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;align-items:center}
 .confetti{position:absolute;width:10px;height:10px;animation:confettifall 2.5s ease-in forwards}
+@keyframes slidedown{0%{transform:translateX(-50%) translateY(-20px);opacity:0}100%{transform:translateX(-50%) translateY(0);opacity:1}}
 @keyframes confettifall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 @keyframes pushup{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 @keyframes squat{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(10px) scaleY(.78)}}
@@ -106,7 +107,7 @@ a{text-decoration:none}
   <div style="padding:16px">
     <div id="quote-box" style="background:#16161e;border-left:3px solid #e8b33a;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#aaa;font-style:italic;line-height:1.5"></div>
     <div id="today-card" style="margin-bottom:16px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div onclick="showScreen('stats')" class="card" style="cursor:pointer;padding:12px;text-align:center">
         <div style="font-size:16px">&#9878;&#65039;</div>
         <div id="home-weight" style="font-size:15px;font-weight:bold;color:#3a8fe8;margin-top:4px">-</div>
@@ -117,10 +118,17 @@ a{text-decoration:none}
         <div id="home-streak" style="font-size:15px;font-weight:bold;color:#e8b33a;margin-top:4px">0</div>
         <div style="font-size:9px;color:#555;letter-spacing:1px;margin-top:2px">STREAK</div>
       </div>
-      <div onclick="showScreen('history')" class="card" style="cursor:pointer;padding:12px;text-align:center">
-        <div style="font-size:16px">&#128170;</div>
-        <div id="home-week-count" style="font-size:15px;font-weight:bold;color:#3ac47a;margin-top:4px">0/5</div>
-        <div style="font-size:9px;color:#555;letter-spacing:1px;margin-top:2px">WOCHE</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div onclick="showScreen('goals')" class="card" style="cursor:pointer;padding:12px;text-align:center">
+        <div style="font-size:16px">&#127919;</div>
+        <div id="home-week-count" style="font-size:15px;font-weight:bold;color:#3ac47a;margin-top:4px">0/3</div>
+        <div style="font-size:9px;color:#555;letter-spacing:1px;margin-top:2px">WOCHENZIEL</div>
+      </div>
+      <div onclick="showScreen('pbs')" class="card" style="cursor:pointer;padding:12px;text-align:center">
+        <div style="font-size:16px">&#9889;</div>
+        <div id="home-pb-count" style="font-size:15px;font-weight:bold;color:#e8b33a;margin-top:4px">-</div>
+        <div style="font-size:9px;color:#555;letter-spacing:1px;margin-top:2px">BESTLEISTUNG</div>
       </div>
     </div>
     <div id="goal-progress-box" style="margin-bottom:16px"></div>
@@ -136,7 +144,7 @@ a{text-decoration:none}
       <div class="topbar-row">
         <button class="back-btn" onclick="confirmLeaveWorkout()">&#8592;</button>
         <div>
-          <div id="workout-day-label" style="font-size:11px;letter-spacing:3px;color:#555;text-transform:uppercase"></div>
+          <div style="display:flex;align-items:center;gap:8px"><div id="workout-day-label" style="font-size:11px;letter-spacing:3px;color:#555;text-transform:uppercase"></div><div id="workout-level"></div></div>
           <div id="workout-focus" style="font-size:15px;font-style:italic"></div>
         </div>
       </div>
@@ -207,6 +215,35 @@ a{text-decoration:none}
 </div>
 
 <!-- SETTINGS -->
+<div id="screen-badges" class="screen">
+  <div class="topbar"><div class="topbar-row"><button class="back-btn" onclick="showScreen('home')">&#8592;</button><div style="font-size:20px">&#127942; Erfolge</div></div></div>
+  <div style="padding:16px">
+    <div id="badges-unlocked" style="margin-bottom:20px"></div>
+    <div style="font-size:11px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">Noch nicht freigeschaltet</div>
+    <div id="badges-locked"></div>
+  </div>
+</div>
+
+<div id="screen-goals" class="screen">
+  <div class="topbar"><div class="topbar-row"><button class="back-btn" onclick="showScreen('home')">&#8592;</button><div style="font-size:20px">&#127919; Wochenziel</div></div></div>
+  <div style="padding:16px">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;color:#555;margin-bottom:12px">Wie viele Workouts pro Woche willst du schaffen?</div>
+      <div id="goal-picker" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+    </div>
+    <div id="goal-this-week" style="margin-bottom:16px"></div>
+    <div id="goal-last-weeks" style="margin-bottom:16px"></div>
+  </div>
+</div>
+
+<div id="screen-pbs" class="screen">
+  <div class="topbar"><div class="topbar-row"><button class="back-btn" onclick="showScreen('home')">&#8592;</button><div style="font-size:20px">&#9889; Bestleistungen</div></div></div>
+  <div style="padding:16px">
+    <div style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.6">Trag deine Maximalleistung ein — wird automatisch mit dem letzten Eintrag verglichen.</div>
+    <div id="pb-list"></div>
+  </div>
+</div>
+
 <div id="screen-settings" class="screen">
   <div class="topbar"><div class="topbar-row"><button class="back-btn" onclick="showScreen('home')">&#8592;</button><div style="font-size:20px">&#9881;&#65039; Einstellungen</div></div></div>
   <div style="padding:16px">
@@ -226,6 +263,8 @@ a{text-decoration:none}
     <button onclick="saveEquipmentFromSettings()" class="primary-btn" style="margin:10px 0 24px">Plan aktualisieren</button>
     <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Daten</div>
     <div class="card">
+      <button onclick="showScreen('pbs')" style="width:100%;padding:11px;border-radius:10px;background:#22222e;border:none;color:#f0ede6;font-size:13px;margin-bottom:8px">&#9889; Bestleistungen verwalten</button>
+      <button onclick="showScreen('goals')" style="width:100%;padding:11px;border-radius:10px;background:#22222e;border:none;color:#f0ede6;font-size:13px;margin-bottom:8px">&#127919; Wochenziel ändern</button>
       <button onclick="exportData()" style="width:100%;padding:11px;border-radius:10px;background:#22222e;border:none;color:#f0ede6;font-size:13px;margin-bottom:8px">&#128229; Backup exportieren</button>
       <button onclick="document.getElementById('import-file').click()" style="width:100%;padding:11px;border-radius:10px;background:#22222e;border:none;color:#f0ede6;font-size:13px;margin-bottom:8px">&#128228; Backup importieren</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>
@@ -277,6 +316,33 @@ var DAY_LABELS={Mo:'Montag',Di:'Dienstag',Mi:'Mittwoch',Do:'Donnerstag',Fr:'Frei
 var DAY_FOCUS={Mo:'Push – Brust & Schultern',Di:'Pull – Rücken & Bizeps',Mi:'Beine & Gesäß',Do:'Core & Stabilität',Fr:'Ganzkörper + Cardio',Sa:'Aktive Erholung',So:'Ruhetag'};
 var DAY_EMOJI={Mo:'&#128170;',Di:'&#127947;',Mi:'&#129461;',Do:'&#127919;',Fr:'&#128293;',Sa:'&#128694;',So:'&#128564;'};
 var REST_DAYS=['Sa','So'];
+var BADGES_DEF=[
+  {id:'first_workout',icon:'&#127939;',name:'Erster Schritt',desc:'Erstes Workout abgeschlossen',check:function(h,w,p){return Object.values(h).filter(function(e){return e.completed;}).length>=1;}},
+  {id:'workout_5',icon:'&#11088;',name:'Aufgewärmt',desc:'5 Workouts abgeschlossen',check:function(h){return Object.values(h).filter(function(e){return e.completed;}).length>=5;}},
+  {id:'workout_10',icon:'&#128293;',name:'On Fire',desc:'10 Workouts',check:function(h){return Object.values(h).filter(function(e){return e.completed;}).length>=10;}},
+  {id:'workout_25',icon:'&#128170;',name:'Durchhalter',desc:'25 Workouts',check:function(h){return Object.values(h).filter(function(e){return e.completed;}).length>=25;}},
+  {id:'workout_50',icon:'&#127942;',name:'Champion',desc:'50 Workouts',check:function(h){return Object.values(h).filter(function(e){return e.completed;}).length>=50;}},
+  {id:'workout_100',icon:'&#128081;',name:'Legende',desc:'100 Workouts',check:function(h){return Object.values(h).filter(function(e){return e.completed;}).length>=100;}},
+  {id:'streak_7',icon:'&#128197;',name:'Eine Woche',desc:'7 Tage Streak am Stück',check:function(h,w,p,streak){return streak>=7;}},
+  {id:'streak_14',icon:'&#128198;',name:'Zwei Wochen',desc:'14 Tage Streak',check:function(h,w,p,streak){return streak>=14;}},
+  {id:'streak_30',icon:'&#127775;',name:'Eiserne Disziplin',desc:'30 Tage Streak',check:function(h,w,p,streak){return streak>=30;}},
+  {id:'level_up',icon:'&#128200;',name:'Aufsteiger',desc:'Erstes Level-Up geschafft',check:function(h,w,prog){var p=prog||{};return Object.values(p).some(function(x){return(x.level||1)>=2;});}},
+  {id:'level_5',icon:'&#128640;',name:'Elite',desc:'Level 5 in einem Workout-Typ',check:function(h,w,prog){var p=prog||{};return Object.values(p).some(function(x){return(x.level||1)>=5;});}},
+  {id:'goal_met',icon:'&#127919;',name:'Ziel erreicht!',desc:'Wochenziel erstmals erfüllt',check:function(h,w){return (w.goalsMetCount||0)>=1;}},
+  {id:'weight_5',icon:'&#9878;',name:'Minus 5 kg',desc:'5 kg abgenommen seit Start',check:function(h,w,prog,s,wl){if(!wl||wl.length<2)return false;var sorted=wl.slice().sort(function(a,b){return a.date.localeCompare(b.date);});return sorted[0].kg-sorted[sorted.length-1].kg>=5;}},
+  {id:'weight_10',icon:'&#127919;',name:'Minus 10 kg',desc:'10 kg abgenommen seit Start',check:function(h,w,prog,s,wl){if(!wl||wl.length<2)return false;var sorted=wl.slice().sort(function(a,b){return a.date.localeCompare(b.date);});return sorted[0].kg-sorted[sorted.length-1].kg>=10;}},
+  {id:'first_pr',icon:'&#9889;',name:'Neuer Rekord!',desc:'Erste persönliche Bestleistung eingetragen',check:function(h,w,prog,s,wl,pbs){return Object.keys(pbs||{}).length>=1;}},
+];
+
+var PB_EXERCISES=[
+  {id:'liegestuetze',name:'Liegestütze Max',unit:'Wdh.'},
+  {id:'klimmzug',name:'Klimmzüge Max',unit:'Wdh.'},
+  {id:'plank_ex',name:'Plank Max',unit:'Sek.'},
+  {id:'kniebeuge',name:'Kniebeugen Max',unit:'Wdh.'},
+  {id:'burpee_ex',name:'Burpees (1 Min.)',unit:'Wdh.'},
+  {id:'side_plank',name:'Side Plank Max',unit:'Sek.'},
+];
+
 var QUOTES=[
 'Der einzige schlechte Workout ist der, den du nicht gemacht hast.',
 'Du musst nicht großartig sein um anzufangen. Aber du musst anfangen um großartig zu sein.',
@@ -702,6 +768,9 @@ function showScreen(name){
   if(name==='history')renderHistory();
   if(name==='stats')renderStats();
   if(name==='settings')renderSettings();
+  if(name==='badges')renderBadges();
+  if(name==='goals')renderGoals();
+  if(name==='pbs'){renderPBs();}
   var navBtns=document.querySelectorAll('#main-nav .nav-btn');
   for(var j=0;j<navBtns.length;j++)navBtns[j].classList.remove('active');
   var navMap={home:0,stats:1,history:2};
@@ -736,6 +805,175 @@ function finishSetup(){
   showScreen('home');
 }
 
+
+// ═══ PROGRESSION ══════════════════════════════════════════════════════════════
+function getProgressionLevel(slotId){
+  var p=progressionData[slotId]||{completions:0,level:1};
+  return p;
+}
+function incrementProgression(slotId){
+  var p=progressionData[slotId]||{completions:0,level:1};
+  p.completions=(p.completions||0)+1;
+  var leveledUp=false;
+  // Level up every 4 completions, max level 5
+  var newLevel=Math.min(5,1+Math.floor(p.completions/4));
+  if(newLevel>(p.level||1)){p.level=newLevel;leveledUp=true;}
+  progressionData[slotId]=p;
+  save('progression',progressionData);
+  return leveledUp;
+}
+function applyProgression(ex,level){
+  if(!level||level<=1)return ex;
+  var e=Object.assign({},ex);
+  // +1 set per 2 levels
+  e.sets=Math.min(ex.sets+Math.floor((level-1)/2),6);
+  // Reps: bump numeric ranges
+  if(ex.reps&&typeof ex.reps==='string'&&ex.reps.indexOf('Sek.')>=0){
+    // Timed: +15 sec per level
+    var base=parseInt(ex.reps)||30;
+    var newSec=base+((level-1)*15);
+    e.reps=newSec+' Sek.';
+  } else if(ex.reps&&typeof ex.reps==='string'&&ex.reps.indexOf('/')<0&&ex.reps.indexOf('Min.')<0&&ex.reps.indexOf('Meter')<0){
+    // Numeric reps: +2 per level
+    e.reps=ex.reps.replace(/\d+/g,function(n){return parseInt(n)+((level-1)*2);});
+  }
+  e._level=level;
+  return e;
+}
+function getLevelColor(level){
+  var cols=['','#555','#3a8fe8','#3ac47a','#e8b33a','#e85d3a'];
+  return cols[Math.min(level,5)]||'#555';
+}
+function getLevelEmoji(level){
+  var e=['','','&#11088;','&#11088;&#11088;','&#11088;&#11088;&#11088;','&#128293;'];
+  return e[Math.min(level,5)]||'';
+}
+
+// ═══ BADGES ═══════════════════════════════════════════════════════════════════
+function checkAndAwardBadges(showToast){
+  var streak=calcStreak(),newBadges=[];
+  BADGES_DEF.forEach(function(b){
+    if(earnedBadges[b.id])return;
+    try{
+      var earned=b.check(history,weeklyGoalData,progressionData,streak,weightLog,personalBests);
+      if(earned){earnedBadges[b.id]={date:getDateKey(),ts:Date.now()};newBadges.push(b);}
+    }catch(e){}
+  });
+  if(newBadges.length){
+    save('earned-badges',earnedBadges);
+    if(showToast)newBadges.forEach(function(b){showBadgeToast(b);});
+  }
+}
+function showBadgeToast(badge){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a1a24;border:1px solid #e8b33a44;border-radius:12px;padding:12px 18px;z-index:200;display:flex;align-items:center;gap:10px;animation:slidedown .3s ease;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+  t.innerHTML='<span style="font-size:24px">'+badge.icon+'</span><div><div style="font-size:13px;font-weight:bold;color:#e8b33a">Erfolg freigeschaltet!</div><div style="font-size:12px;color:#aaa">'+badge.name+'</div></div>';
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},3500);
+}
+
+// ═══ WEEK COMPARISON ══════════════════════════════════════════════════════════
+function getWeekWorkoutCount(weeksAgo){
+  var now=new Date(),dow=now.getDay();
+  var monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1)-(weeksAgo*7));monday.setHours(0,0,0,0);
+  var sunday=new Date(monday);sunday.setDate(monday.getDate()+7);
+  var count=0;
+  for(var k in history){if(history[k].completed){var d=new Date(k);if(d>=monday&&d<sunday)count++;}}
+  return count;
+}
+
+// ═══ PERSONAL BESTS ═══════════════════════════════════════════════════════════
+function renderPBs(){
+  var h='';
+  PB_EXERCISES.forEach(function(pb){
+    var cur=personalBests[pb.id];
+    h+='<div class="card" style="margin-bottom:10px;padding:14px">';
+    h+='<div style="font-size:14px;font-weight:bold;margin-bottom:6px">'+pb.name+'</div>';
+    if(cur){h+='<div style="font-size:22px;font-weight:bold;color:#e8b33a">'+cur.value+' '+pb.unit+'</div><div style="font-size:10px;color:#555;margin-bottom:8px">'+cur.date+'</div>';}
+    else{h+='<div style="font-size:13px;color:#555;margin-bottom:8px">Noch kein Eintrag</div>';}
+    h+='<div style="display:flex;gap:8px">';
+    h+='<input type="number" inputmode="numeric" placeholder="Neuer Rekord" id="pbi-'+pb.id+'" style="flex:1;background:#0f0f12;border:1px solid #22222e;border-radius:8px;padding:10px;color:#f0ede6;font-size:15px"/>';
+    h+='<button id="pbb-'+pb.id+'" style="padding:10px 16px;border-radius:8px;background:#e85d3a;border:none;color:#0f0f12;font-size:14px;font-weight:bold">&#10003;</button>';
+    h+='</div></div>';
+  });
+  document.getElementById('pb-list').innerHTML=h;
+  // Attach handlers after render
+  PB_EXERCISES.forEach(function(pb){
+    var btn=document.getElementById('pbb-'+pb.id);
+    if(btn)(function(id,unit){btn.onclick=function(){savePB(id,unit);};})(pb.id,pb.unit);
+  });
+}
+function savePB(id,unit){
+  var input=document.getElementById('pb-input-'+id);
+  var val=parseFloat(input.value);
+  if(isNaN(val)||val<=0)return;
+  var prev=personalBests[id];
+  var isNew=!prev||val>prev.value;
+  personalBests[id]={value:val,unit:unit,date:getDateKey()};
+  save('personal-bests',personalBests);
+  input.value='';
+  if(isNew){vibrate([100,50,200]);showBadgeToast({icon:'&#9889;',name:'Neuer Rekord: '+val+' '+unit});}
+  checkAndAwardBadges(true);
+  renderPBs();
+}
+
+// ═══ GOALS ════════════════════════════════════════════════════════════════════
+function renderGoals(){
+  var target=weeklyGoalData.target||3;
+  var thisWeek=getWeekWorkoutCount(0);
+  var pct=Math.min(thisWeek/target,1);
+  var col=pct>=1?'#3ac47a':'#e85d3a';
+  // Goal picker
+  var picker='';
+  for(var i=1;i<=7;i++){
+    var sel=i===target;
+    picker+='<div onclick="setGoal('+i+')" style="width:42px;height:42px;border-radius:50%;border:1.5px solid '+(sel?'#e85d3a66':'#22222e')+';background:'+(sel?'#e85d3a20':'transparent')+';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;color:'+(sel?'#e85d3a':'#555')+';cursor:pointer">'+i+'</div>';
+  }
+  document.getElementById('goal-picker').innerHTML=picker;
+  // This week
+  document.getElementById('goal-this-week').innerHTML='<div class="card">'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:#555">Diese Woche</span>'
+    +'<span style="font-size:16px;font-weight:bold;color:'+col+'">'+thisWeek+' / '+target+'</span></div>'
+    +'<div class="progress-track" style="height:6px"><div class="progress-fill" style="width:'+(pct*100)+'%;background:'+col+'"></div></div>'
+    +(pct>=1?'<div style="font-size:12px;color:#3ac47a;margin-top:8px">&#127881; Wochenziel erreicht!</div>':'')
+    +'</div>';
+  // Last 4 weeks
+  var weeksHTML='<div style="font-size:11px;color:#555;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px">Letzte 4 Wochen</div>';
+  for(var w=1;w<=4;w++){
+    var cnt=getWeekWorkoutCount(w);
+    var wPct=Math.min(cnt/target,1);
+    weeksHTML+='<div class="card" style="margin-bottom:8px;padding:10px 14px"><div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px"><span style="color:#555">vor '+w+' Woche'+(w>1?'n':'')+'</span><span style="color:#aaa">'+cnt+'/'+target+'</span></div><div class="progress-track" style="height:4px"><div class="progress-fill" style="width:'+(wPct*100)+'%;background:#3a8fe8"></div></div></div>';
+  }
+  document.getElementById('goal-last-weeks').innerHTML=weeksHTML;
+}
+function setGoal(n){
+  weeklyGoalData.target=n;
+  save('weekly-goal',weeklyGoalData);
+  renderGoals();
+}
+
+// ═══ BADGES SCREEN ════════════════════════════════════════════════════════════
+function renderBadges(){
+  checkAndAwardBadges(false);
+  var unlocked=[],locked=[];
+  BADGES_DEF.forEach(function(b){
+    if(earnedBadges[b.id])unlocked.push(Object.assign({},b,{earned:earnedBadges[b.id]}));
+    else locked.push(b);
+  });
+  var unlockedEl=document.getElementById('badges-unlocked');
+  var lockedEl=document.getElementById('badges-locked');
+  if(!unlockedEl||!lockedEl)return;
+  if(unlocked.length){
+    unlockedEl.innerHTML='<div style="font-size:11px;color:#e8b33a;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">Freigeschaltet ('+unlocked.length+')</div>'
+      +unlocked.map(function(b){
+        return '<div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;border-color:#e8b33a33"><span style="font-size:28px">'+b.icon+'</span><div><div style="font-size:14px;font-weight:bold;color:#e8b33a">'+b.name+'</div><div style="font-size:12px;color:#555">'+b.desc+'</div><div style="font-size:10px;color:#444;margin-top:2px">'+b.earned.date+'</div></div></div>';
+      }).join('');
+  } else unlockedEl.innerHTML='';
+  lockedEl.innerHTML=locked.map(function(b){
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:6px;background:#16161e;border-radius:12px;border:1px solid #22222e;opacity:.5"><span style="font-size:24px;filter:grayscale(1)">'+b.icon+'</span><div><div style="font-size:13px;color:#555">'+b.name+'</div><div style="font-size:11px;color:#444">'+b.desc+'</div></div></div>';
+  }).join('');
+}
+
 // ═══ HOME ═════════════════════════════════════════════════════════════════════
 function renderHome(){
   try {
@@ -754,10 +992,19 @@ function renderHome(){
   document.getElementById('quote-box').innerHTML='&#128172; '+QUOTES[qIdx];
   var pills='';
   if(streak>0)pills+='<div class="pill" style="background:#e8b33a15;border:1px solid #e8b33a33">&#128293; <b style="color:#e8b33a">'+streak+'</b> <span style="color:#555">Tage</span></div>';
+  // Week comparison
+  var thisWk=getWeekWorkoutCount(0),lastWk=getWeekWorkoutCount(1);
+  var diff=thisWk-lastWk;
+  var diffStr=diff>0?'&#8593; +'+diff+' ggü. Vorwoche':diff<0?'&#8595; '+diff+' ggü. Vorwoche':'= wie Vorwoche';
+  var diffCol=diff>0?'#3ac47a':diff<0?'#e85d3a':'#555';
+  pills+='<div class="pill" style="background:#16161e;border:1px solid #22222e;cursor:pointer" onclick="showScreen(\"goals\")">'
+    +'<span style="color:'+diffCol+'">'+diffStr+'</span></div>';
   document.getElementById('home-pills').innerHTML=pills;
   document.getElementById('home-weight').textContent=latestW?latestW.kg+' kg':'-';
   document.getElementById('home-streak').textContent=streak;
   document.getElementById('home-week-count').textContent=weekWorkouts();
+  var topPB=Object.values(personalBests).sort(function(a,b){return new Date(b.date)-new Date(a.date);})[0];
+  document.getElementById('home-pb-count').textContent=topPB?topPB.value+' '+topPB.unit:Object.keys(personalBests).length+' Einträge';
   // Goal progress
   var goalBox=document.getElementById('goal-progress-box');
   if(profile&&profile.goalKg&&latestW&&weightLog.length>1){
@@ -823,12 +1070,18 @@ function confirmLeaveWorkout(){
   showScreen('home');
 }
 function renderWorkout(){
-  var _wdi=getDayInfo(currentDay),col=_wdi.color,exercises=getExercises(currentDay);
+  var _wdi=getDayInfo(currentDay),col=_wdi.color;
+  var _rawEx=getExercises(currentDay);
+  var _prog=getProgressionLevel(_wdi.id||currentDay);
+  var exercises=_rawEx.map(function(e){return applyProgression(e,_prog.level);});
   var isRest=REST_DAYS.indexOf(currentDay)>=0||exercises.length===0;
   var todayDone=history[getDateKey()]&&history[getDateKey()].completed;
   document.getElementById('workout-day-label').textContent=DAY_LABELS[currentDay];
   document.getElementById('workout-focus').style.color=col;
-  document.getElementById('workout-focus').textContent=DAY_FOCUS[currentDay];
+  document.getElementById('workout-focus').textContent=_wdi.focus;
+  var _lvl=_prog.level||1;
+  var _lvlEl=document.getElementById('workout-level');
+  if(_lvlEl){_lvlEl.innerHTML=_lvl>1?'<span style="font-size:11px;background:'+getLevelColor(_lvl)+'22;border:1px solid '+getLevelColor(_lvl)+'44;border-radius:6px;padding:2px 8px;color:'+getLevelColor(_lvl)+'">'+getLevelEmoji(_lvl)+' Level '+_lvl+'</span>':'';}
   document.getElementById('workout-progress-bar').style.background=col;
   document.getElementById('timer-circle').style.stroke=col;
   var totalSets=exercises.reduce(function(a,e){return a+e.sets;},0);
@@ -901,11 +1154,28 @@ function markSet(exIdx,setIdx){
 }
 function completeWorkout(){
   var durMin=workoutStartTs?Math.round((Date.now()-workoutStartTs)/60000):0;
+  var dinfo=getDayInfo(currentDay);
   history[getDateKey()]={completed:true,dayKey:currentDay,ts:Date.now(),durMin:durMin};
   save('workout-history',history);
+  // Progression
+  var leveledUp=incrementProgression(dinfo.id||currentDay);
+  // Check weekly goal
+  var thisWeek=getWeekWorkoutCount(0);
+  if(thisWeek>=(weeklyGoalData.target||3)&&!weeklyGoalData['goalMetThisWeek']){
+    var wk=new Date();var mon=new Date(wk);mon.setDate(wk.getDate()-(wk.getDay()===0?6:wk.getDay()-1));
+    weeklyGoalData['goalMetThisWeek']=getDateKey(mon);
+    weeklyGoalData.goalsMetCount=(weeklyGoalData.goalsMetCount||0)+1;
+    save('weekly-goal',weeklyGoalData);
+    setTimeout(function(){showBadgeToast({icon:'&#127919;',name:'Wochenziel erreicht! '+thisWeek+'/'+weeklyGoalData.target});},1000);
+  }
   clearInterval(durationInterval);
   vibrate([100,50,100]);
   showConfetti();
+  checkAndAwardBadges(true);
+  if(leveledUp){
+    var lvl=getProgressionLevel(dinfo.id||currentDay).level;
+    setTimeout(function(){showBadgeToast({icon:'&#128200;',name:'Level Up! Jetzt Level '+lvl+' &#8594; '+dinfo.focus});},800);
+  }
   setTimeout(function(){showScreen('home');},1800);
 }
 
