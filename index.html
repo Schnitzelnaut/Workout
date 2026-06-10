@@ -36,7 +36,7 @@ a{text-decoration:none}
 .equip-option.selected{background:#e85d3a15;border-color:#e85d3a55}
 .equip-check{width:20px;height:20px;border-radius:50%;border:2px solid #22222e;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s;flex-shrink:0;color:transparent}
 .equip-option.selected .equip-check{background:#e85d3a;border-color:#e85d3a;color:#0f0f12}
-.anim-box{height:110px;padding:0 20px;display:flex;align-items:center;justify-content:center}
+.anim-box{min-height:80px;padding:4px;display:flex;align-items:center;justify-content:center}
 .day-dot{aspect-ratio:1;border-radius:5px;background:#22222e;opacity:.35}
 .day-dot.done{opacity:1}
 .day-dot.today{outline:2px solid #f0ede6}
@@ -157,8 +157,9 @@ a{text-decoration:none}
         <button id="anim-toggle" onclick="toggleAnim()" style="background:none;border:none;color:#555;font-size:12px">ausblenden</button>
       </div>
     </div>
-    <div id="anim-box" class="anim-box"></div>
-    <div id="anim-tip" style="padding:8px 14px 0;font-size:12px;color:#555;font-style:italic"></div>
+    <div id="anim-box" class="anim-box" style="height:auto;padding:8px 4px"></div>
+    <div id="muscle-labels" style="padding:6px 14px 2px;display:flex;gap:5px;flex-wrap:wrap"></div>
+    <div id="anim-tip" style="padding:4px 14px 0;font-size:12px;color:#555;font-style:italic"></div>
     <div style="padding:8px 14px 12px"><a id="yt-link" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#ff4444;background:#ff444415;border:1px solid #ff444433;border-radius:6px;padding:5px 10px">&#9654; YouTube Tutorial</a></div>
   </div>
   <div id="exercise-list" style="padding:12px 16px 0"></div>
@@ -429,30 +430,214 @@ function getExercises(dayKey){
   return ids.map(function(id){return EX_DB[id];}).filter(Boolean);
 }
 
-// ═══ SVG ANIMATIONS ═══════════════════════════════════════════════════════════
-function getSVG(key,c){
-  var s={
-    pushup:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:pushup 1.4s ease-in-out infinite;transform-origin:50px 55px"><circle cx="50" cy="22" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="30" x2="50" y2="46" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="34" x2="28" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="34" x2="72" y2="50" stroke="'+c+'" stroke-width="2.5"/><circle cx="28" cy="51" r="2.5" fill="'+c+'"/><circle cx="72" cy="51" r="2.5" fill="'+c+'"/><line x1="50" y1="46" x2="30" y2="60" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="46" x2="70" y2="60" stroke="'+c+'" stroke-width="2.5"/><circle cx="30" cy="61" r="2.5" fill="'+c+'"/><circle cx="70" cy="61" r="2.5" fill="'+c+'"/></g></svg>',
-    squat:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:squat 1.6s ease-in-out infinite;transform-origin:50px 40px"><circle cx="50" cy="12" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="20" x2="50" y2="40" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="28" x2="32" y2="38" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="28" x2="68" y2="38" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="40" x2="36" y2="60" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="40" x2="64" y2="60" stroke="'+c+'" stroke-width="2.5"/><line x1="36" y1="60" x2="30" y2="72" stroke="'+c+'" stroke-width="2.5"/><line x1="64" y1="60" x2="70" y2="72" stroke="'+c+'" stroke-width="2.5"/><circle cx="30" cy="73" r="2.5" fill="'+c+'"/><circle cx="70" cy="73" r="2.5" fill="'+c+'"/></g></svg>',
-    plank:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:plankpulse 2s ease-in-out infinite"><circle cx="20" cy="38" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="26" y1="40" x2="80" y2="46" stroke="'+c+'" stroke-width="3"/><line x1="30" y1="41" x2="22" y2="55" stroke="'+c+'" stroke-width="2.5"/><circle cx="21" cy="56" r="2.5" fill="'+c+'"/><line x1="75" y1="46" x2="68" y2="58" stroke="'+c+'" stroke-width="2.5"/><line x1="75" y1="46" x2="82" y2="58" stroke="'+c+'" stroke-width="2.5"/><circle cx="68" cy="59" r="2.5" fill="'+c+'"/><circle cx="82" cy="59" r="2.5" fill="'+c+'"/></g></svg>',
-    lunge:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:lunge 1.6s ease-in-out infinite;transform-origin:50px 40px"><circle cx="45" cy="12" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="45" y1="20" x2="45" y2="40" stroke="'+c+'" stroke-width="2.5"/><line x1="45" y1="28" x2="30" y2="36" stroke="'+c+'" stroke-width="2.5"/><line x1="45" y1="28" x2="60" y2="36" stroke="'+c+'" stroke-width="2.5"/><line x1="45" y1="40" x2="28" y2="58" stroke="'+c+'" stroke-width="2.5"/><line x1="45" y1="40" x2="62" y2="55" stroke="'+c+'" stroke-width="2.5"/><line x1="28" y1="58" x2="22" y2="70" stroke="'+c+'" stroke-width="2.5"/><line x1="62" y1="55" x2="72" y2="70" stroke="'+c+'" stroke-width="2.5"/><circle cx="22" cy="71" r="2.5" fill="'+c+'"/><circle cx="72" cy="71" r="2.5" fill="'+c+'"/></g></svg>',
-    bridge:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="28" cy="68" r="3" fill="'+c+'"/><circle cx="72" cy="68" r="3" fill="'+c+'"/><circle cx="15" cy="56" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="22" y1="58" x2="35" y2="62" stroke="'+c+'" stroke-width="2.5"/><g style="animation:bridge 1.6s ease-in-out infinite;transform-origin:50px 50px"><line x1="35" y1="62" x2="50" y2="48" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="48" x2="65" y2="58" stroke="'+c+'" stroke-width="2.5"/></g><line x1="65" y1="58" x2="72" y2="68" stroke="'+c+'" stroke-width="2.5"/><line x1="35" y1="62" x2="28" y2="68" stroke="'+c+'" stroke-width="2.5"/></svg>',
-    crunch:'<svg viewBox="0 0 100 80" width="100%" height="100%"><line x1="50" y1="50" x2="30" y2="65" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="50" x2="70" y2="65" stroke="'+c+'" stroke-width="2.5"/><circle cx="30" cy="66" r="2.5" fill="'+c+'"/><circle cx="70" cy="66" r="2.5" fill="'+c+'"/><g style="animation:crunch 1.4s ease-in-out infinite;transform-origin:50px 50px"><line x1="50" y1="50" x2="50" y2="32" stroke="'+c+'" stroke-width="2.5"/><circle cx="50" cy="24" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="38" x2="35" y2="44" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="38" x2="65" y2="44" stroke="'+c+'" stroke-width="2.5"/></g></svg>',
-    rowmove:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="30" cy="25" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="30" y1="33" x2="55" y2="40" stroke="'+c+'" stroke-width="2.5"/><line x1="30" y1="33" x2="20" y2="55" stroke="'+c+'" stroke-width="2.5"/><line x1="20" y1="55" x2="15" y2="68" stroke="'+c+'" stroke-width="2.5"/><circle cx="15" cy="69" r="2.5" fill="'+c+'"/><g style="animation:rowmove 1.4s ease-in-out infinite;transform-origin:55px 40px"><line x1="55" y1="40" x2="75" y2="35" stroke="'+c+'" stroke-width="2.5"/><circle cx="76" cy="35" r="3" fill="'+c+'"/></g><line x1="55" y1="40" x2="60" y2="60" stroke="'+c+'" stroke-width="2.5"/><circle cx="60" cy="61" r="2.5" fill="'+c+'"/></svg>',
-    superman:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:superman 1.8s ease-in-out infinite"><circle cx="50" cy="38" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="38" x2="50" y2="52" stroke="'+c+'" stroke-width="2.5"/><line x1="28" y1="35" x2="72" y2="35" stroke="'+c+'" stroke-width="2.5"/><circle cx="27" cy="35" r="2.5" fill="'+c+'"/><circle cx="73" cy="35" r="2.5" fill="'+c+'"/><line x1="50" y1="52" x2="30" y2="62" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="52" x2="70" y2="62" stroke="'+c+'" stroke-width="2.5"/><circle cx="29" cy="62" r="2.5" fill="'+c+'"/><circle cx="71" cy="62" r="2.5" fill="'+c+'"/></g></svg>',
-    curl:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="50" cy="15" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="23" x2="50" y2="44" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="30" x2="35" y2="40" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="44" x2="38" y2="62" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="44" x2="62" y2="62" stroke="'+c+'" stroke-width="2.5"/><circle cx="38" cy="63" r="2.5" fill="'+c+'"/><circle cx="62" cy="63" r="2.5" fill="'+c+'"/><g style="animation:curl 1.4s ease-in-out infinite;transform-origin:55px 42px"><line x1="55" y1="42" x2="75" y2="52" stroke="'+c+'" stroke-width="2.5"/><circle cx="76" cy="53" r="3" fill="'+c+'"/></g></svg>',
-    run:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="50" cy="14" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="22" x2="50" y2="44" stroke="'+c+'" stroke-width="2.5"/><g style="animation:runleg1 .7s ease-in-out infinite;transform-origin:50px 32px"><line x1="50" y1="32" x2="32" y2="42" stroke="'+c+'" stroke-width="2.5"/></g><line x1="50" y1="32" x2="68" y2="24" stroke="'+c+'" stroke-width="2.5"/><g style="animation:runleg1 .7s ease-in-out infinite;transform-origin:50px 44px"><line x1="50" y1="44" x2="35" y2="60" stroke="'+c+'" stroke-width="2.5"/><line x1="35" y1="60" x2="28" y2="72" stroke="'+c+'" stroke-width="2.5"/></g><g style="animation:runleg2 .7s ease-in-out infinite;transform-origin:50px 44px"><line x1="50" y1="44" x2="65" y2="60" stroke="'+c+'" stroke-width="2.5"/><line x1="65" y1="60" x2="72" y2="72" stroke="'+c+'" stroke-width="2.5"/></g></svg>',
-    burpee:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:burpee 2s ease-in-out infinite;transform-origin:50px 40px"><circle cx="50" cy="12" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="20" x2="50" y2="40" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="28" x2="32" y2="38" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="28" x2="68" y2="38" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="40" x2="36" y2="58" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="40" x2="64" y2="58" stroke="'+c+'" stroke-width="2.5"/><line x1="36" y1="58" x2="30" y2="70" stroke="'+c+'" stroke-width="2.5"/><line x1="64" y1="58" x2="70" y2="70" stroke="'+c+'" stroke-width="2.5"/></g></svg>',
-    pike:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:pike 1.6s ease-in-out infinite;transform-origin:50px 50px"><circle cx="25" cy="20" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="25" y1="27" x2="50" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="35" y1="36" x2="18" y2="45" stroke="'+c+'" stroke-width="2.5"/><circle cx="17" cy="46" r="2.5" fill="'+c+'"/><line x1="35" y1="36" x2="48" y2="28" stroke="'+c+'" stroke-width="2.5"/><circle cx="49" cy="27" r="2.5" fill="'+c+'"/><line x1="50" y1="50" x2="35" y2="68" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="50" x2="65" y2="68" stroke="'+c+'" stroke-width="2.5"/><circle cx="35" cy="69" r="2.5" fill="'+c+'"/><circle cx="65" cy="69" r="2.5" fill="'+c+'"/></g></svg>',
-    legraise:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="18" cy="42" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="25" y1="44" x2="50" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="32" y1="46" x2="28" y2="60" stroke="'+c+'" stroke-width="2.5"/><circle cx="28" cy="61" r="2.5" fill="'+c+'"/><g style="animation:legraise 1.6s ease-in-out infinite;transform-origin:50px 50px"><line x1="50" y1="50" x2="70" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="70" y1="50" x2="85" y2="60" stroke="'+c+'" stroke-width="2.5"/><circle cx="86" cy="61" r="2.5" fill="'+c+'"/></g></svg>',
-    deadbug:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="50" cy="32" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="39" x2="50" y2="55" stroke="'+c+'" stroke-width="2.5"/><g style="animation:deadbug 1.4s ease-in-out infinite;transform-origin:50px 45px"><line x1="50" y1="43" x2="28" y2="35" stroke="'+c+'" stroke-width="2.5"/><circle cx="27" cy="34" r="2.5" fill="'+c+'"/><line x1="50" y1="55" x2="72" y2="48" stroke="'+c+'" stroke-width="2.5"/><circle cx="73" cy="47" r="2.5" fill="'+c+'"/></g><line x1="50" y1="43" x2="72" y2="35" stroke="'+c+'" stroke-width="2.5"/><circle cx="73" cy="34" r="2.5" fill="'+c+'"/><line x1="50" y1="55" x2="28" y2="48" stroke="'+c+'" stroke-width="2.5"/><circle cx="27" cy="47" r="2.5" fill="'+c+'"/></svg>',
-    climber:'<svg viewBox="0 0 100 80" width="100%" height="100%"><circle cx="22" cy="30" r="7" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="22" y1="37" x2="60" y2="48" stroke="'+c+'" stroke-width="2.5"/><line x1="30" y1="40" x2="18" y2="52" stroke="'+c+'" stroke-width="2.5"/><circle cx="17" cy="53" r="2.5" fill="'+c+'"/><g style="animation:climb1 .7s ease-in-out infinite;transform-origin:60px 48px"><line x1="60" y1="48" x2="45" y2="62" stroke="'+c+'" stroke-width="2.5"/><circle cx="45" cy="63" r="2.5" fill="'+c+'"/></g><g style="animation:climb2 .7s ease-in-out infinite;transform-origin:60px 48px"><line x1="60" y1="48" x2="75" y2="62" stroke="'+c+'" stroke-width="2.5"/><circle cx="75" cy="63" r="2.5" fill="'+c+'"/></g></svg>',
-    twist:'<svg viewBox="0 0 100 80" width="100%" height="100%"><line x1="30" y1="55" x2="70" y2="55" stroke="'+c+'" stroke-width="2.5"/><line x1="30" y1="55" x2="22" y2="68" stroke="'+c+'" stroke-width="2.5"/><line x1="70" y1="55" x2="78" y2="68" stroke="'+c+'" stroke-width="2.5"/><g style="animation:twist 1.2s ease-in-out infinite;transform-origin:50px 45px"><line x1="50" y1="55" x2="50" y2="35" stroke="'+c+'" stroke-width="2.5"/><circle cx="50" cy="27" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="42" x2="30" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="42" x2="70" y2="50" stroke="'+c+'" stroke-width="2.5"/><circle cx="29" cy="51" r="2.5" fill="'+c+'"/><circle cx="71" cy="51" r="2.5" fill="'+c+'"/></g></svg>',
-    pullup:'<svg viewBox="0 0 100 80" width="100%" height="100%"><line x1="15" y1="8" x2="85" y2="8" stroke="'+c+'" stroke-width="3"/><g style="animation:pullup 1.6s ease-in-out infinite;transform-origin:50px 30px"><line x1="50" y1="8" x2="44" y2="18" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="8" x2="56" y2="18" stroke="'+c+'" stroke-width="2.5"/><circle cx="50" cy="26" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="34" x2="50" y2="52" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="40" x2="34" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="40" x2="66" y2="50" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="52" x2="38" y2="66" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="52" x2="62" y2="66" stroke="'+c+'" stroke-width="2.5"/></g></svg>',
-    stretch:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:stretch 3s ease-in-out infinite;transform-origin:50px 40px"><circle cx="50" cy="14" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="22" x2="50" y2="44" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="30" x2="25" y2="22" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="30" x2="75" y2="22" stroke="'+c+'" stroke-width="2.5"/><circle cx="24" cy="21" r="2.5" fill="'+c+'"/><circle cx="76" cy="21" r="2.5" fill="'+c+'"/><line x1="50" y1="44" x2="34" y2="62" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="44" x2="66" y2="62" stroke="'+c+'" stroke-width="2.5"/><circle cx="34" cy="63" r="2.5" fill="'+c+'"/><circle cx="66" cy="63" r="2.5" fill="'+c+'"/></g></svg>',
-    calf:'<svg viewBox="0 0 100 80" width="100%" height="100%"><g style="animation:calf 1.2s ease-in-out infinite;transform-origin:50px 50px"><circle cx="50" cy="12" r="8" fill="none" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="20" x2="50" y2="42" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="28" x2="33" y2="36" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="28" x2="67" y2="36" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="42" x2="44" y2="62" stroke="'+c+'" stroke-width="2.5"/><line x1="50" y1="42" x2="56" y2="62" stroke="'+c+'" stroke-width="2.5"/><circle cx="44" cy="63" r="2.5" fill="'+c+'"/><circle cx="56" cy="63" r="2.5" fill="'+c+'"/></g></svg>'
-  };
-  return s[key]||s.pushup;
+
+// ═══ MUSCLE MAP SYSTEM ════════════════════════════════════════════════════════
+// Each exercise defines: primary [] and secondary [] muscle keys
+// Muscle keys map to SVG paths in the body diagram
+
+var MUSCLE_DATA = {
+  // FRONT muscles
+  chest:      {label:'Brust',      side:'front', color:'#e85d3a'},
+  shoulders:  {label:'Schultern',  side:'both',  color:'#e8b33a'},
+  biceps:     {label:'Bizeps',     side:'front', color:'#3a8fe8'},
+  triceps:    {label:'Trizeps',    side:'back',  color:'#3a8fe8'},
+  abs:        {label:'Bauch',      side:'front', color:'#3ac47a'},
+  obliques:   {label:'Seite',      side:'front', color:'#3ac47a'},
+  quads:      {label:'Quadrizeps', side:'front', color:'#c43ae8'},
+  // BACK muscles
+  lats:       {label:'Rücken',     side:'back',  color:'#3a8fe8'},
+  traps:      {label:'Trapez',     side:'back',  color:'#e8b33a'},
+  lower_back: {label:'Unt. Rücken',side:'back',  color:'#e85d3a'},
+  glutes:     {label:'Gesäß',      side:'back',  color:'#c43ae8'},
+  hamstrings: {label:'Oberschenkel',side:'back', color:'#c43ae8'},
+  calves:     {label:'Waden',      side:'both',  color:'#3ac47a'},
+  core:       {label:'Core',       side:'front', color:'#3ac47a'},
+};
+
+// Exercise → muscle activation map
+var EX_MUSCLES = {
+  liegestuetze:     {p:['chest','triceps'],      s:['shoulders','abs']},
+  enge_liegestuetze:{p:['triceps','chest'],       s:['shoulders']},
+  pike:             {p:['shoulders'],             s:['triceps','traps']},
+  decline:          {p:['chest','shoulders'],     s:['triceps']},
+  db_press:         {p:['chest','triceps'],       s:['shoulders']},
+  band_press:       {p:['chest'],                 s:['triceps','shoulders']},
+  explosive:        {p:['chest','triceps'],       s:['shoulders','abs']},
+  tisch_rudern:     {p:['lats','biceps'],         s:['traps','lower_back']},
+  band_row:         {p:['lats'],                  s:['biceps','traps']},
+  klimmzug:         {p:['lats','biceps'],         s:['traps','shoulders']},
+  towel_curl:       {p:['biceps'],                s:['lats']},
+  db_curl:          {p:['biceps'],                s:['lats']},
+  band_curl:        {p:['biceps'],                s:[]},
+  snow_angel:       {p:['traps','lats'],          s:['shoulders','lower_back']},
+  superman_ex:      {p:['lower_back','glutes'],   s:['hamstrings','traps']},
+  kniebeuge:        {p:['quads','glutes'],        s:['hamstrings','calves','abs']},
+  goblet:           {p:['quads','glutes'],        s:['abs','calves']},
+  band_squat:       {p:['quads','glutes'],        s:['hamstrings']},
+  ausfallschritt:   {p:['quads','glutes'],        s:['hamstrings','calves']},
+  glute_bridge:     {p:['glutes','hamstrings'],   s:['lower_back','abs']},
+  sumo:             {p:['quads','glutes'],        s:['hamstrings','calves']},
+  calf_ex:          {p:['calves'],                s:[]},
+  jump_squat:       {p:['quads','glutes'],        s:['calves','abs']},
+  plank_ex:         {p:['abs','core'],            s:['shoulders','lower_back']},
+  side_plank:       {p:['obliques','core'],       s:['shoulders','abs']},
+  bicycle:          {p:['abs','obliques'],        s:['quads']},
+  dead_bug_ex:      {p:['abs','core'],            s:['lower_back']},
+  climber_ex:       {p:['abs','core'],            s:['shoulders','quads','chest']},
+  leg_raise_ex:     {p:['abs'],                   s:['quads','obliques']},
+  hanging:          {p:['abs'],                   s:['quads','lats']},
+  russian:          {p:['obliques','abs'],        s:[]},
+  burpee_ex:        {p:['chest','quads'],         s:['abs','shoulders','calves']},
+  high_knees:       {p:['quads','abs'],           s:['calves','glutes']},
+  bear_crawl:       {p:['abs','shoulders'],       s:['chest','quads','triceps']},
+};
+
+function getExMuscles(exId) {
+  return EX_MUSCLES[exId] || {p:[], s:[]};
+}
+
+// Build the body SVG with highlighted muscles
+function buildBodySVG(primaryMuscles, secondaryMuscles, col) {
+  col = col || '#e85d3a';
+
+  function muscleColor(key, isPrimary) {
+    return isPrimary ? col : col + '66';
+  }
+
+  var pSet = {}, sSet = {};
+  (primaryMuscles||[]).forEach(function(m){ pSet[m]=true; });
+  (secondaryMuscles||[]).forEach(function(m){ sSet[m]=true; });
+
+  function mc(key) {
+    if(pSet[key]) return {fill: col, opacity: 1};
+    if(sSet[key]) return {fill: col, opacity: 0.4};
+    return {fill: '#2a2a35', opacity: 1};
+  }
+
+  // Helper to build style attr
+  function ms(key) {
+    var c = mc(key);
+    return 'fill:'+c.fill+';opacity:'+c.opacity+';transition:all 0.3s';
+  }
+
+  // Build labels for active muscles
+  var activeLabels = [];
+  (primaryMuscles||[]).forEach(function(m){ if(MUSCLE_DATA[m]) activeLabels.push({label:MUSCLE_DATA[m].label,primary:true}); });
+  (secondaryMuscles||[]).forEach(function(m){ if(MUSCLE_DATA[m]&&!pSet[m]) activeLabels.push({label:MUSCLE_DATA[m].label,primary:false}); });
+
+  var labelsHTML = activeLabels.map(function(l){
+    return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:'+(l.primary?col:'#777')+';background:'+(l.primary?col+'18':'transparent')+';border:1px solid '+(l.primary?col+'44':'#333')+';border-radius:5px;padding:2px 7px">'
+      +(l.primary?'&#11044;':'&#9711;')+' '+l.label+'</span>';
+  }).join('');
+
+  // FRONT BODY SVG (simplified anatomical)
+  var frontSVG = '<svg viewBox="0 0 120 280" width="110" height="auto" style="flex-shrink:0">'
+    // body outline
+    + '<ellipse cx="60" cy="22" rx="16" ry="18" fill="#1a1a24" stroke="#333" stroke-width="1.5"/>' // head
+    // neck
+    + '<rect x="54" y="38" width="12" height="10" rx="3" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // torso
+    + '<path d="M35 48 Q28 60 27 100 L35 120 L85 120 L93 100 Q92 60 85 48 Z" fill="#1a1a24" stroke="#333" stroke-width="1.2"/>'
+    // CHEST
+    + '<path d="M40 55 Q52 52 60 55 Q60 72 50 74 Q38 70 38 58 Z" style="'+ms('chest')+'"/>'
+    + '<path d="M60 55 Q68 52 80 55 Q82 58 82 70 Q70 74 60 72 Z" style="'+ms('chest')+'"/>'
+    // SHOULDERS front
+    + '<ellipse cx="32" cy="58" rx="9" ry="11" style="'+ms('shoulders')+'"/>'
+    + '<ellipse cx="88" cy="58" rx="9" ry="11" style="'+ms('shoulders')+'"/>'
+    // upper arms (biceps)
+    + '<path d="M25 66 Q20 80 22 96 Q28 98 34 96 Q34 80 31 66 Z" style="'+ms('biceps')+'"/>'
+    + '<path d="M89 66 Q92 80 92 96 Q86 98 86 96 Q86 80 89 66 Z" style="'+ms('biceps')+'"/>'
+    // forearms
+    + '<path d="M22 96 Q18 112 20 124 Q26 126 30 124 Q32 112 34 96 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<path d="M90 96 Q94 112 92 124 Q88 126 84 124 Q86 112 86 96 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // hands
+    + '<ellipse cx="21" cy="128" rx="6" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<ellipse cx="91" cy="128" rx="6" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // ABS
+    + '<rect x="47" y="76" width="11" height="9" rx="2" style="'+ms('abs')+'"/>'
+    + '<rect x="62" y="76" width="11" height="9" rx="2" style="'+ms('abs')+'"/>'
+    + '<rect x="47" y="87" width="11" height="9" rx="2" style="'+ms('abs')+'"/>'
+    + '<rect x="62" y="87" width="11" height="9" rx="2" style="'+ms('abs')+'"/>'
+    + '<rect x="47" y="98" width="11" height="9" rx="2" style="'+ms('abs')+'"/>'
+    + '<rect x="62" y="98" width="11" height="9" rx="2" style="'+ms('abs')+'"/>'
+    // OBLIQUES
+    + '<path d="M36 70 Q38 88 40 108 Q46 110 47 100 Q44 80 40 68 Z" style="'+ms('obliques')+'"/>'
+    + '<path d="M84 70 Q82 88 80 108 Q74 110 73 100 Q76 80 80 68 Z" style="'+ms('obliques')+'"/>'
+    // hips/pelvis
+    + '<path d="M35 118 Q45 128 60 130 Q75 128 85 118 L83 112 L37 112 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // QUADS
+    + '<path d="M37 128 Q33 158 35 188 Q43 192 50 188 Q52 158 50 128 Z" style="'+ms('quads')+'"/>'
+    + '<path d="M70 128 Q68 158 68 188 Q75 192 83 188 Q85 158 81 128 Z" style="'+ms('quads')+'"/>'
+    // inner quads
+    + '<path d="M50 130 Q53 160 53 188 Q58 190 62 190 Q62 160 65 130 Z" style="'+ms('quads')+';opacity:'+(pSet['quads']?'0.6':sSet['quads']?'0.25':'0.4')+'"/>'
+    // knees
+    + '<ellipse cx="43" cy="192" rx="9" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<ellipse cx="75" cy="192" rx="9" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // shins
+    + '<path d="M35 198 Q33 228 36 248 Q42 250 50 248 Q52 228 51 198 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<path d="M67 198 Q65 228 66 248 Q72 250 80 248 Q81 228 83 198 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // CALVES front
+    + '<path d="M36 198 Q34 218 36 238 Q38 238 40 236 Q40 218 42 198 Z" style="'+ms('calves')+'"/>'
+    + '<path d="M78 198 Q80 218 78 238 Q76 238 74 236 Q74 218 76 198 Z" style="'+ms('calves')+'"/>'
+    // feet
+    + '<ellipse cx="43" cy="252" rx="9" ry="5" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<ellipse cx="75" cy="252" rx="9" ry="5" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '</svg>';
+
+  // BACK BODY SVG
+  var backSVG = '<svg viewBox="0 0 120 280" width="110" height="auto" style="flex-shrink:0">'
+    // head
+    + '<ellipse cx="60" cy="22" rx="16" ry="18" fill="#1a1a24" stroke="#333" stroke-width="1.5"/>'
+    // neck
+    + '<rect x="54" y="38" width="12" height="10" rx="3" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // TRAPS
+    + '<path d="M42 48 Q60 44 78 48 Q74 60 60 62 Q46 60 42 48 Z" style="'+ms('traps')+'"/>'
+    // torso back
+    + '<path d="M35 58 Q28 70 27 110 L35 128 L85 128 L93 110 Q92 70 85 58 Z" fill="#1a1a24" stroke="#333" stroke-width="1.2"/>'
+    // SHOULDERS back
+    + '<ellipse cx="32" cy="62" rx="9" ry="11" style="'+ms('shoulders')+'"/>'
+    + '<ellipse cx="88" cy="62" rx="9" ry="11" style="'+ms('shoulders')+'"/>'
+    // LATS
+    + '<path d="M36 66 Q30 90 32 112 Q40 118 48 112 Q50 90 42 66 Z" style="'+ms('lats')+'"/>'
+    + '<path d="M84 66 Q90 90 88 112 Q80 118 72 112 Q70 90 78 66 Z" style="'+ms('lats')+'"/>'
+    // TRICEPS
+    + '<path d="M25 70 Q20 84 22 98 Q28 100 34 98 Q34 84 30 70 Z" style="'+ms('triceps')+'"/>'
+    + '<path d="M89 70 Q92 84 92 98 Q86 100 86 98 Q86 84 90 70 Z" style="'+ms('triceps')+'"/>'
+    // forearms back
+    + '<path d="M22 98 Q18 114 20 126 Q26 128 30 126 Q32 112 34 98 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<path d="M90 98 Q94 114 92 126 Q88 128 84 126 Q86 112 86 98 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // hands
+    + '<ellipse cx="21" cy="130" rx="6" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<ellipse cx="91" cy="130" rx="6" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // LOWER BACK
+    + '<path d="M44 108 Q60 112 76 108 Q78 120 76 128 Q60 132 44 128 Q42 120 44 108 Z" style="'+ms('lower_back')+'"/>'
+    // spine line
+    + '<line x1="60" y1="62" x2="60" y2="128" stroke="#111" stroke-width="1.5" stroke-dasharray="3,3"/>'
+    // hips
+    + '<path d="M35 126 Q45 136 60 138 Q75 136 85 126 L83 120 L37 120 Z" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // GLUTES
+    + '<path d="M37 134 Q38 156 44 164 Q52 168 60 166 Q60 148 52 134 Z" style="'+ms('glutes')+'"/>'
+    + '<path d="M83 134 Q82 156 76 164 Q68 168 60 166 Q60 148 68 134 Z" style="'+ms('glutes')+'"/>'
+    // HAMSTRINGS
+    + '<path d="M37 164 Q34 188 36 200 Q44 204 50 200 Q52 188 48 164 Z" style="'+ms('hamstrings')+'"/>'
+    + '<path d="M83 164 Q86 188 84 200 Q76 204 70 200 Q68 188 72 164 Z" style="'+ms('hamstrings')+'"/>'
+    // knees back
+    + '<ellipse cx="43" cy="203" rx="9" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<ellipse cx="75" cy="203" rx="9" ry="7" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    // CALVES back (main)
+    + '<path d="M35 208 Q33 230 37 248 Q44 252 50 248 Q52 228 51 208 Z" style="'+ms('calves')+'"/>'
+    + '<path d="M67 208 Q65 230 67 248 Q74 252 80 248 Q81 228 83 208 Z" style="'+ms('calves')+'"/>'
+    // feet
+    + '<ellipse cx="43" cy="252" rx="9" ry="5" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '<ellipse cx="75" cy="252" rx="9" ry="5" fill="#1a1a24" stroke="#333" stroke-width="1"/>'
+    + '</svg>';
+
+  return {front: frontSVG, back: backSVG, labels: labelsHTML};
+}
+
+function renderMuscleMap(exId, col) {
+  var muscles = getExMuscles(exId);
+  return buildBodySVG(muscles.p, muscles.s, col);
 }
 
 // ═══ STATE ════════════════════════════════════════════════════════════════════
@@ -659,9 +844,24 @@ function renderWorkout(){
     document.getElementById('anim-tip').innerHTML='&#128161; '+ex.tip;
     document.getElementById('anim-panel').style.borderColor=col+'44';
     document.getElementById('yt-link').href='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.name+' Übung Technik richtig');
-    if(animVisible){document.getElementById('anim-box').innerHTML=getSVG(ex.animKey,col);document.getElementById('anim-box').style.display='flex';}
-    else document.getElementById('anim-box').style.display='none';
-    document.getElementById('anim-toggle').textContent=animVisible?'ausblenden':'Animation';
+    if(animVisible){
+      // Find exercise ID for muscle map
+      var exId=null;
+      if(planIds&&currentDay&&planIds[currentDay])exId=planIds[currentDay][Math.min(activeEx,exercises.length-1)];
+      var mmap=renderMuscleMap(exId||'',col);
+      document.getElementById('anim-box').innerHTML=
+        '<div style="display:flex;gap:12px;align-items:flex-start;padding:0 4px">'
+        +'<div style="text-align:center"><div style="font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">VORNE</div>'+mmap.front+'</div>'
+        +'<div style="text-align:center"><div style="font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">HINTEN</div>'+mmap.back+'</div>'
+        +'</div>';
+      document.getElementById('anim-box').style.display='flex';
+      document.getElementById('anim-box').style.flexDirection='column';
+      document.getElementById('anim-box').style.alignItems='center';
+      // Labels
+      var labEl=document.getElementById('muscle-labels');
+      if(labEl)labEl.innerHTML=mmap.labels;
+    } else document.getElementById('anim-box').style.display='none';
+    document.getElementById('anim-toggle').textContent=animVisible?'ausblenden':'Muskeln';
     document.getElementById('anim-panel').style.display='block';
   } else document.getElementById('anim-panel').style.display='none';
   var html='';
