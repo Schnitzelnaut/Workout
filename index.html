@@ -353,7 +353,11 @@ var SA_EXERCISES=[
 function getExercises(dayKey){
   if(dayKey==='Sa')return SA_EXERCISES;
   if(dayKey==='So')return [];
-  var ids=planIds[dayKey]||[];
+  if(!planIds){
+    if(equipment)planIds=buildDefaultPlan(equipment);
+    else return [];
+  }
+  var ids=(planIds[dayKey])||[];
   return ids.map(function(id){return EX_DB[id];}).filter(Boolean);
 }
 
@@ -466,6 +470,7 @@ function finishSetup(){
 
 // ═══ HOME ═════════════════════════════════════════════════════════════════════
 function renderHome(){
+  try {
   var today=getTodayKey(),col=DAY_COLORS[today];
   var todayDone=history[getDateKey()]&&history[getDateKey()].completed;
   var streak=calcStreak();
@@ -504,6 +509,16 @@ function renderHome(){
     preview+='</div>';
   }
   document.getElementById('today-card').innerHTML='<div style="background:#16161e;border:1px solid '+col+'44;border-radius:16px;overflow:hidden"><div style="background:linear-gradient(135deg,'+col+'18,transparent);padding:18px 18px 14px;border-bottom:1px solid #22222e"><div style="font-size:11px;letter-spacing:3px;color:#555;text-transform:uppercase;margin-bottom:5px">Heute</div><div style="font-size:19px">'+(isRest?(today==='So'?'Ruhetag &#128564;':'Aktive Erholung &#128694;'):exercises.length+' Übungen')+'</div>'+((!isRest)?'<div style="font-size:12px;color:#555;margin-top:3px">'+totalSets+' Sätze &middot; ca. '+Math.round(totalSets*1.5+5)+' Min.</div>':'')+'</div>'+preview+'<div style="padding:0 14px 14px"><button onclick="startWorkout(\''+today+'\')" '+(todayDone?'disabled':'')+' style="width:100%;padding:13px;border-radius:12px;background:'+(todayDone?'#22222e':col)+';border:none;color:'+(todayDone?'#555':'#0f0f12')+';font-size:15px;font-weight:bold;cursor:'+(todayDone?'default':'pointer')+'">'+(todayDone?'&#10003; Heute erledigt':isRest?'Erholungstag starten':'Workout starten &#8594;')+'</button></div></div>';
+  } catch(err) {
+    console.error('renderHome error:', err);
+    // Rebuild plan and retry once
+    if(equipment && !planIds){
+      planIds=buildDefaultPlan(equipment);
+      save('plan-ids',planIds);
+      setTimeout(renderHome, 100);
+      return;
+    }
+  }
   document.getElementById('week-list').innerHTML=DAYS.map(function(d){
     var dc=DAY_COLORS[d],isToday=d===today;
     var isDone=history[getDateKey()]&&history[getDateKey()].dayKey===d&&history[getDateKey()].completed;
@@ -816,26 +831,13 @@ if(!profile||!equipment){
   renderEquipList('equip-list',selectedEquip);
   showScreen('setup');
 }else{
-  if(!planIds){planIds=buildDefaultPlan(equipment);save('plan-ids',planIds);}
+  // Always ensure planIds has all days
+  if(!planIds||!planIds['Mo']||!planIds['Mi']||!planIds['Fr']){
+    planIds=buildDefaultPlan(equipment);
+    save('plan-ids',planIds);
+  }
   showScreen('home');
 }
 </script>
-
-<script>
-if("serviceWorker" in navigator){
-  window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").then(function(reg){
-      reg.onupdatefound = function(){
-        var w = reg.installing;
-        w.onstatechange = function(){
-          if(w.state === "installed" && navigator.serviceWorker.controller){
-            // New version available - reload automatically
-            window.location.reload();
-          }
-        };
-      };
-    }).catch(function(){});
-  });
-}
-</script></body>
+</body>
 </html>
